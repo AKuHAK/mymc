@@ -48,7 +48,7 @@ class io_error(error, IOError):
 		if getattr(self, "filename", None) != None:
 			return self.filename + ": " + self.strerror
 		return self.strerror
-	
+
 class path_not_found(io_error):
 	def __init__(self, filename):
 		io_error.__init__(self, ENOENT, "path not found", filename)
@@ -66,14 +66,14 @@ class dir_index_not_found(io_error, IndexError):
 	def __init__(self, filename, index):
 		msg = "index (%d) past of end of directory" % index
 		io_error.__init__(self, ENOENT, msg, filename)
-				  
+
 class corrupt(io_error):
 	def __init__(self, msg, f = None):
 		filename = None
 		if f != None:
 			filename = getattr(f, "name")
 		io_error.__init__(self, EIO, msg, filename)
-		
+
 class ecc_error(corrupt):
 	def __init__(self, msg, filename = None):
 		corrupt.__init__(self, msg, filename)
@@ -98,7 +98,7 @@ else:
 
 	def pack_32bit_array(a):
 		return a.tostring()
-	
+
 def unpack_superblock(s):
 	sb = struct.unpack("<28s12sHHHHLLLLLL8x128s128sbbxx", s)
 	sb = list(sb)
@@ -124,7 +124,7 @@ def pathname_split(pathname):
 		 if name != ""],
 		components[0] != "",
 		components[-1] == "")
-		
+
 class lru_cache(object):
 	def __init__(self, length):
 		self._lru_list = [[i - 1, None, None, i + 1]
@@ -135,11 +135,11 @@ class lru_cache(object):
 		lru_list = self._lru_list
 		i = 0
 		while i != len(self._lru_list):
-			print "%d: %s, " % (i, str(lru_list[i][1])), 
+			print "%d: %s, " % (i, str(lru_list[i][1])),
 			i = lru_list[i][3]
 		print
 		print self._index_map
-			
+
 	def _move_to_front(self, i):
 		lru_list = self._lru_list
 		first = lru_list[0]
@@ -154,7 +154,7 @@ class lru_cache(object):
 			elt[3] = i2
 			lru_list[i2][0] = i
 			first[3] = i
-		
+
 	def add(self, key, value):
 		lru_list = self._lru_list
 		index_map = self._index_map
@@ -177,7 +177,7 @@ class lru_cache(object):
 		self._move_to_front(i)
 
 		return ret
-		
+
 	def get(self, key, default = None):
 		i = self._index_map.get(key)
 		if i == None:
@@ -192,10 +192,10 @@ class lru_cache(object):
 		return [(elt[1], elt[2])
 			for elt in self._lru_list[1 : -1]
 			if elt[2] != None]
-		
+
 class fat_chain(object):
 	"""A class for accessing a file's FAT entries as a simple sequence."""
-	
+
 	def __init__(self, lookup_fat, first):
 		self.lookup_fat = lookup_fat
 		self._first = first
@@ -256,10 +256,10 @@ class fat_chain(object):
 		self._cur = old_cur
 		self.offset = old_offset
 		return i
-		
+
 class ps2mc_file(object):
 	"""A file-like object for accessing a file in memory card image."""
-	
+
 	def __init__(self, mc, dirloc, first_cluster, length, mode,
 		     name = None):
 		# print "ps2mc_file.__init__", name, self
@@ -292,7 +292,7 @@ class ps2mc_file(object):
 		if self.fat_chain == None:
 			self.fat_chain = self.mc.fat_chain(self.first_cluster)
 		return self.fat_chain[n]
-		
+
 	def read_file_cluster(self, n):
 		if n == self.buffer_cluster:
 			return self.buffer
@@ -302,7 +302,7 @@ class ps2mc_file(object):
 			return None
 		self.buffer = self.mc.read_allocatable_cluster(cluster)
 		self.buffer_cluster = n
-		return self.buffer 
+		return self.buffer
 
 	def _extend_file(self, n):
 		mc = self.mc
@@ -321,7 +321,7 @@ class ps2mc_file(object):
 			# print "@@@ linking", prev, "->", cluster
 			mc.set_fat(prev, cluster | PS2MC_FAT_ALLOCATED_BIT)
 		return cluster
-	
+
 	def write_file_cluster(self, n, buf):
 		mc = self.mc
 		cluster = self._find_file_cluster(n)
@@ -350,7 +350,7 @@ class ps2mc_file(object):
 				return False
 			mc.write_allocatable_cluster(cluster,
 						     ["\0"] * cluster_size)
-		
+
 		cluster = self._extend_file(n)
 		if cluster == None:
 			return False
@@ -359,7 +359,7 @@ class ps2mc_file(object):
 		self.buffer = buf
 		self.buffer_cluster = n
 		return True
-	
+
 	def update_notify(self, first_cluster, length):
 		if self.first_cluster != first_cluster:
 			self.first_cluster = first_cluster
@@ -367,7 +367,7 @@ class ps2mc_file(object):
 		self.length = length
 		self.buffer = None
 		self.buffer_cluster = None
-		
+
 	def read(self, size = None, eol = None):
 		if self.closed:
 			raise ValueError, "file is closed"
@@ -398,10 +398,10 @@ class ps2mc_file(object):
 	def write(self, out, _set_modified = True):
 		if self.closed:
 			raise ValueError, "file is closed"
-	
+
 		cluster_size = self.mc.cluster_size
 		pos = self._pos
-		if self._append: 
+		if self._append:
 			pos = self.length
 		elif not self._write:
 			raise io_error, (EACCES, "file not opened for writing",
@@ -454,7 +454,7 @@ class ps2mc_file(object):
 
 	def readline(self, size = None):
 		return self.read(size, "\n")
-		
+
 	def readlines(self, sizehint):
 		return [line for line in self]
 
@@ -482,17 +482,17 @@ class ps2mc_file(object):
 	def __exit__(self, a, b, c):
 		self.close()
 		return
-	
+
 	# def __del__(self):
 	#	# print "ps2mc_file.__del__", self
 	#	if self.mc != None:
 	#		self.mc.notify_closed(self.dirloc, self)
 	#		self.mc = None
 	#	self.fat_chain = None
-		
+
 class ps2mc_directory(object):
 	"""A sequence and iterator object for directories."""
-	
+
 	def __init__(self, mc, dirloc, first_cluster, length,
 		     mode = "rb", name = None):
 		self.f = ps2mc_file(mc, dirloc, first_cluster,
@@ -532,7 +532,7 @@ class ps2mc_directory(object):
 
 	def __len__(self):
 		return self.f.length / PS2MC_DIRENT_LENGTH
-	
+
 	def __getitem__(self, index):
 		# print "@@@ getitem", index, self.f.name
 		self.seek(index)
@@ -565,12 +565,12 @@ class ps2mc_directory(object):
 		if self.f != None:
 			self.f.close()
 			self.f = None
-			
+
 class _root_directory(ps2mc_directory):
 	"""Wrapper for the cached root directory object.
 
 	The close() method is disabled so the cached object can be reused."""
-	
+
 	def __init__(self, mc, dirloc, first_cluster, length,
 		     mode = "r+b", name = "/"):
 		ps2mc_directory.__init__(self, mc, dirloc, first_cluster,
@@ -581,17 +581,17 @@ class _root_directory(ps2mc_directory):
 
 	def real_close(self):
 		ps2mc_directory.close(self)
-		
+
 class ps2mc(object):
 	"""A PlayStation 2 memory card filesystem implementation.
 
 	The close() method must be called when the object is no longer needed,
 	otherwise cycles that can't be collected by the garbage collector
 	will remain."""
-	
+
 	open_files = None
 	fat_cache = None
-	
+
 	def _calculate_derived(self):
 		self.spare_size = div_round_up(self.page_size, 128) * 4
 		self.raw_page_size = self.page_size + self.spare_size
@@ -612,7 +612,7 @@ class ps2mc(object):
 		self.modified = False
 		self.f = None
 		self.rootdir = None
-		
+
 		f.seek(0)
 		s = f.read(0x154)
 		if len(s) != 0x154 or not s.startswith(PS2MC_MAGIC):
@@ -659,7 +659,7 @@ class ps2mc(object):
 		if (dot[8] != "." or dotdot[8] != ".."
 		    or not mode_is_dir(dot[0]) or not mode_is_dir(dotdot[0])):
 			raise corrupt, "Root directory damaged."
-		
+
 		self.fat_cursor = 0
 		self.curdir = (0, 0)
 
@@ -691,17 +691,17 @@ class ps2mc(object):
 
 		self.modified = False
 		return
-		
+
 	def format(self, params):
 		"""Create (format) a new memory card image."""
-		
+
 		(with_ecc, page_size,
 		 pages_per_erase_block, param_pages_per_card) = params
 
 		if pages_per_erase_block < 1:
 			raise error, ("invalid pages per erase block (%d)"
 				      % page_size)
-			
+
 		pages_per_card = round_down(param_pages_per_card,
 					    pages_per_erase_block)
 		cluster_size = PS2MC_CLUSTER_SIZE
@@ -716,7 +716,7 @@ class ps2mc(object):
 		    or pages_per_cluster < 1
 		    or pages_per_cluster * page_size != cluster_size):
 			raise error, "invalid page size (%d)" % page_size
-		
+
 		good_block1 = erase_blocks_per_card - 1
 		good_block2 = erase_blocks_per_card - 2
 		first_ifc = div_round_up(PS2MC_INDIRECT_FAT_OFFSET,
@@ -756,9 +756,9 @@ class ps2mc(object):
 		self.good_block1 = good_block1
 		self.good_block2 = good_block2
 		self.indirect_fat_cluster_list = ifc_list
-		bebl = "\xFF\xFF\xFF\xFF" * 32		
+		bebl = "\xFF\xFF\xFF\xFF" * 32
 		self.bad_erase_block_list = unpack_32bit_array(bebl)
-		
+
 		self._calculate_derived()
 
 		self.ignore_ecc = not with_ecc
@@ -775,7 +775,7 @@ class ps2mc(object):
 			self.f.write(erased)
 
 		self.modified = True
-		
+
 		first_fat_cluster = first_ifc + indirect_fat_clusters
 		remainder = fat_clusters % epc
 		for i in range(indirect_fat_clusters):
@@ -787,7 +787,7 @@ class ps2mc(object):
 				buf.fromlist([0xFFFFFFFF] * (epc - remainder))
 			self._write_fat_cluster(ifc_list[i], buf)
 
-		
+
 		# go through the fat backwards for better cache usage
 		for i in range(allocatable_clusters - 1,
 			       allocatable_cluster_end - 1, -1):
@@ -797,7 +797,7 @@ class ps2mc(object):
 		self.set_fat(0, PS2MC_FAT_CHAIN_END)
 
 		self.allocatable_cluster_end = allocatable_cluster_end
-		
+
 		now = tod_now()
 		s = pack_dirent((DF_RWX | DF_DIR | DF_0400 | DF_EXISTS,
 				 0, 2, now,
@@ -847,7 +847,7 @@ class ps2mc(object):
 				a.fromlist(s)
 			a.tofile(f)
 			f.write("\0" * (self.spare_size - len(a)))
-			
+
 	def read_cluster(self, n):
 		pages_per_cluster = self.pages_per_cluster
 		cluster_size = self.cluster_size
@@ -913,7 +913,7 @@ class ps2mc(object):
 			if dirty:
 				n += self.allocatable_cluster_offset
 				self.write_cluster(n, buf)
-		
+
 	def read_allocatable_cluster(self, n):
 		a = self.alloc_cluster_cache.get(n)
 		if a != None:
@@ -923,7 +923,7 @@ class ps2mc(object):
 		buf = self.read_cluster(n + self.allocatable_cluster_offset)
 		self._add_alloc_cluster_to_cache(n, buf, False)
 		return buf
-		
+
 	def write_allocatable_cluster(self, n, buf):
 		self._add_alloc_cluster_to_cache(n, buf, True)
 
@@ -944,7 +944,7 @@ class ps2mc(object):
 		indirect_fat = self._read_fat_cluster(indirect_cluster)
 		cluster = indirect_fat[indirect_offset]
 		return (self._read_fat_cluster(cluster), cluster)
-					      
+
 	def read_fat(self, n):
 		if n < 0 or n >= self.allocatable_cluster_end:
 			raise io_error, (EIO,
@@ -963,20 +963,20 @@ class ps2mc(object):
 		(fat, offset, cluster) = self.read_fat(n)
 		fat[offset] = value
 		self._write_fat_cluster(cluster, fat)
-		
+
 	def allocate_cluster(self):
 		epc = self.entries_per_cluster
 		allocatable_cluster_limit = self.allocatable_cluster_limit
-		
+
 		end = div_round_up(allocatable_cluster_limit, epc)
 		remainder = allocatable_cluster_limit % epc
-			
+
 		while self.fat_cursor < end:
 			(fat, cluster) = self.read_fat_cluster(self.fat_cursor)
 			if (self.fat_cursor == end - 1
 			    and remainder != 0):
 				n = min(fat[:remainder])
-			else: 
+			else:
 				n = min(fat)
 			if (n & PS2MC_FAT_ALLOCATED_BIT) == 0:
 				offset = fat.index(n)
@@ -987,13 +987,13 @@ class ps2mc(object):
 				return ret
 			self.fat_cursor += 1
 		return None
-	
+
 	def fat_chain(self, first_cluster):
 		return fat_chain(self.lookup_fat, first_cluster)
 
 	def file(self, dirloc, first_cluster, length, mode, name = None):
 		"""Create a new file-like object for a file."""
-		
+
 		f = ps2mc_file(self, dirloc, first_cluster, length, mode, name)
 		if dirloc == None:
 			return
@@ -1008,7 +1008,7 @@ class ps2mc(object):
 		      mode = None, name = None):
 		return ps2mc_directory(self, dirloc, first_cluster, length,
 				       mode, name)
-	
+
 	def _directory(self, dirloc, first_cluster, length,
 		       mode = None, name = None):
 		# print "@@@ _directory", dirloc, first_cluster, length
@@ -1031,7 +1031,7 @@ class ps2mc(object):
 	def _get_parent_dirloc(self, dirloc):
 		"""Get the dirloc of the parent directory of the
 		file or directory refered to by dirloc"""
-		
+
 		cluster = self.read_allocatable_cluster(dirloc[0])
 		ent = unpack_dirent(cluster[:PS2MC_DIRENT_LENGTH])
 		return (ent[4], ent[5])
@@ -1039,7 +1039,7 @@ class ps2mc(object):
 	def _dirloc_to_ent(self, dirloc):
 		"""Get the directory entry of the file or directory
 		refered to by dirloc"""
-		
+
 		dir = self._directory(None, dirloc[0], dirloc[1] + 1,
 				      name = "_dirloc_to_ent temp")
 		ent = dir[dirloc[1]]
@@ -1048,7 +1048,7 @@ class ps2mc(object):
 
 	def _opendir_dirloc(self, dirloc, mode = "rb"):
 		"""Open the directory that is refered to by dirloc"""
-		
+
 		ent = self._dirloc_to_ent(dirloc)
 		return self._directory(dirloc, ent[4], ent[2],
 				       name = "_opendir_dirloc temp")
@@ -1056,10 +1056,10 @@ class ps2mc(object):
 	def _opendir_parent_dirloc(self, dirloc, mode = "rb"):
 		"""Open the directory that contains the file or directory
 		refered to by dirloc"""
-		
+
 		return self._opendir_dirloc(self._get_parent_dirloc(dirloc),
 					    mode)
-		
+
 	def update_dirent_all(self, dirloc, thisf, new_ent):
 		# print "@@@ update_dirent", dirloc
 		# print "@@@ new_ent", new_ent
@@ -1073,16 +1073,16 @@ class ps2mc(object):
 			dir = self._opendir_parent_dirloc(dirloc, "r+b")
 			if opened != None:
 				opened[0] = dir
-		
+
 		ent = dir[dirloc[1]]
 		# print "@@@ old_ent", ent
-		
+
 		is_dir = ent[0] & DF_DIR
 
 		if is_dir and thisf != None and new_ent[2] != None:
 			new_ent = list(new_ent)
 			new_ent[2] /= PS2MC_DIRENT_LENGTH
-			
+
 		# print "len: ", ent[2], new_ent[2]
 
 		modified = changed = notify = False
@@ -1096,7 +1096,7 @@ class ps2mc(object):
 						modified = True
 					if i in [2, 4]:
 						notify = True
-						
+
 		# Modifying a file causes the modification time of
 		# both the file and the file's directory to updated,
 		# however modifying a directory never updates the
@@ -1105,7 +1105,7 @@ class ps2mc(object):
 			dir.write_raw_ent(dirloc[1], ent,
 					  (modified and not is_dir))
 
-		
+
 		if notify:
 			for f in files:
 				if f != thisf:
@@ -1125,7 +1125,7 @@ class ps2mc(object):
 				       (None, None, length, None,
 					first_cluster, None, modified, None,
 					None))
-			
+
 	def notify_closed(self, dirloc, thisf):
 		if self.open_files == None or dirloc == None:
 			return
@@ -1140,7 +1140,7 @@ class ps2mc(object):
 			if dir != None:
 				dir.close()
 			del self.open_files[dirloc]
-			
+
 	def search_directory(self, dir, name):
 		"""Search dir for name."""
 
@@ -1153,7 +1153,7 @@ class ps2mc(object):
 				ent = dir[i]
 			except IndexError:
 				raise corrupt("Corrupt directory", dir.f)
-				
+
 			if ent[8] == name and (ent[0] & DF_EXISTS):
 				return (i, ent)
 		return (None, None)
@@ -1163,7 +1163,7 @@ class ps2mc(object):
 
 		if name == "":
 			raise file_not_found, name
-		
+
 		# print "@@@ create_dir_ent", parent_dirloc, name
 		dir_ent = self._dirloc_to_ent(parent_dirloc)
 		dir = self._directory(parent_dirloc, dir_ent[4], dir_ent[2],
@@ -1177,7 +1177,7 @@ class ps2mc(object):
 				break
 		else:
 			i = l
-			
+
 		dirloc = (dir_ent[4], i)
 		# print "@@@ dirloc", dirloc
 		now = tod_now()
@@ -1224,7 +1224,7 @@ class ps2mc(object):
 
 	def delete_dirloc(self, dirloc, truncate, name):
 		"""Delete or truncate the file or directory given by dirloc."""
-		
+
 		if dirloc == (0, 0):
 			raise io_error, (EACCES,
 					 "cannot remove root directory",
@@ -1249,7 +1249,7 @@ class ps2mc(object):
 		else:
 			ent[0] &= ~DF_EXISTS
 		self.update_dirent_all(dirloc, None, ent)
-		
+
 		while cluster != PS2MC_FAT_CHAIN_END:
 			if cluster / epc < self.fat_cursor:
 				self.fat_cursor = cluster / epc
@@ -1262,7 +1262,7 @@ class ps2mc(object):
 			if next_cluster == PS2MC_FAT_CHAIN_END_UNALLOC:
 				break
 			cluster = next_cluster
-			
+
 	def path_search(self, pathname):
 		"""Parse and resolve a pathname.
 
@@ -1289,7 +1289,7 @@ class ps2mc(object):
 
 		tmpname = "<path_search temp>"
 		_directory = self._directory
-		
+
 		if dirloc == (0, 0):
 			rootent = self.read_allocatable_cluster(0)
 			ent = unpack_dirent(rootent[:PS2MC_DIRENT_LENGTH])
@@ -1309,7 +1309,7 @@ class ps2mc(object):
 				# non-existent directory
 				return (None, (0, 0, 0, 0, 0, 0, 0, 0, None),
 					False)
-			
+
 			if s == ".":
 				continue
 			if s == "..":
@@ -1328,7 +1328,7 @@ class ps2mc(object):
 
 			if ent == None:
 				continue
-			
+
 			dirloc = (dir_cluster, i)
 			if ent[0] & DF_DIR:
 				dir = _directory(dirloc, ent[4], ent[2],
@@ -1342,12 +1342,12 @@ class ps2mc(object):
 
 		if ent == None:
 			ent = (0, 0, 0, 0, 0, 0, 0, 0, components[-1])
-			
+
 		return (dirloc, ent, is_dir)
 
 	def open(self, filename, mode = "r"):
 		"""Open a file, returning a new file-like object for it."""
-		
+
 		(dirloc, ent, is_dir) = self.path_search(filename)
 		# print "@@@ open", (dirloc, ent)
 		if dirloc == None:
@@ -1391,7 +1391,7 @@ class ps2mc(object):
 
 	def _is_empty(self, dirloc, ent, filename):
 		"""Check if a directory is empty."""
-		
+
 		dir = self._directory(dirloc, ent[4], ent[2], "rb",
 				      filename)
 		try:
@@ -1401,10 +1401,10 @@ class ps2mc(object):
 		finally:
 			dir.close()
 		return True
-		
+
 	def remove(self, filename):
 		"""Remove a file or empty directory."""
-		
+
 		(dirloc, ent, is_dir) = self.path_search(filename)
 		if dirloc == None:
 			raise path_not_found, filename
@@ -1437,15 +1437,15 @@ class ps2mc(object):
 
 		Returns None if the filename doesn't exist, rather than
 		throwing a error."""
-		
+
 		(dirloc, ent, is_dir) = self.path_search(filename)
 		if ent[0] == 0:
 			return None
 		return ent[0]
-	
+
 	def get_dirent(self, filename):
 		"""Get the raw directory entry tuple for a file."""
-		
+
 		(dirloc, ent, is_dir) = self.path_search(filename)
 		if dirloc == None:
 			raise path_not_found, filename
@@ -1458,7 +1458,7 @@ class ps2mc(object):
 
 		Not all fields can be changed.  If a field in new_ent
 		is set to None then is not changed."""
-		
+
 		(dirloc, ent, is_dir) = self.path_search(filename)
 		if dirloc == None:
 			raise path_not_found, filename
@@ -1496,7 +1496,7 @@ class ps2mc(object):
 		if olddirloc in self.open_files:
 			raise io_error, (EBUSY, "cannot rename open file",
 					 newname)
-		
+
 		(newparentdirloc, newent, x) = self.path_search(newpathname)
 		if newparentdirloc == None:
 			raise path_not_found, newpathname
@@ -1518,13 +1518,13 @@ class ps2mc(object):
 		if is_dir and self.is_ancestor(newparentdirloc, olddirloc):
 			raise io_error, (EINVAL, "cannot move directory"
 					 " beneath itself", oldpathname)
-			
+
 
 		newparentdir = None
 		newent = None
 		try:
 			tmpmode = (oldent[0] & ~DF_DIR) | DF_FILE
-			
+
 			(newdirloc, newent) \
 				= self.create_dir_entry(newparentdirloc,
 							newname, tmpmode)
@@ -1547,7 +1547,7 @@ class ps2mc(object):
 
 		if not is_dir:
 			return
-			
+
 		newdir = self._opendir_dirloc(newdirloc)
 		try:
 			dotent = list(newdir[0])
@@ -1555,8 +1555,8 @@ class ps2mc(object):
 			newdir.write_raw_ent(0, dotent, False)
 		finally:
 			newdir.close()
-			
-			
+
+
 	def import_save_file(self, sf, ignore_existing, dirname = None):
 		"""Copy the contents a ps2_save_file object to a directory.
 
@@ -1566,7 +1566,7 @@ class ps2mc(object):
 		to that directory instead of the directory specified by
 		the save file.
 		"""
-		
+
 		dir_ent = sf.get_directory()
 		if dirname == None:
 			dirname = "/" + dir_ent[8]
@@ -1610,7 +1610,7 @@ class ps2mc(object):
 				except EnvironmentError, why:
 					# print "@@@ failed", why
 					pass
-			
+
 				try:
 					# print "@@@ remove dir", dirname
 					self.remove(dirname)
@@ -1622,14 +1622,14 @@ class ps2mc(object):
 				del where
 
 		# set modes and timestamps to those of the save file
-		
+
 		dir = self._opendir_dirloc(dir_dirloc, "r+b")
 		try:
 			for i in range(dir_ent[2]):
 				dir[i + 2] = sf.get_file(i)[0]
 		finally:
 			dir.close()
-			
+
 		dir = self._opendir_dirloc(root_dirloc, "r+b")
 		try:
 			a = dir_ent[:]
@@ -1705,10 +1705,10 @@ class ps2mc(object):
 				self.delete_dirloc((first_cluster, i), False,
 						   dirname + ent[8])
 		self.delete_dirloc(dirloc, False, dirname)
-		
+
 	def rmdir(self, dirname):
 		"""Recursively delete a directory."""
-		
+
 		(dirloc, ent, is_dir) = self.path_search(dirname)
 		if dirloc == None:
 			raise path_not_found, dirname
@@ -1726,7 +1726,7 @@ class ps2mc(object):
 
 	def get_free_space(self):
 		"""Returns the amount of free space in bytes."""
-		
+
 		free = 0
 		for i in xrange(self.allocatable_cluster_end):
 			if (self.lookup_fat(i) & PS2MC_FAT_ALLOCATED_BIT) == 0:
@@ -1736,7 +1736,7 @@ class ps2mc(object):
 	def get_allocatable_space(self):
 		"""Returns the total amount of allocatable space in bytes."""
 		return self.allocatable_cluster_limit * self.cluster_size
-	
+
 	def _check_file(self, fat, first_cluster, length):
 		cluster = first_cluster
 		i = 0
@@ -1799,18 +1799,18 @@ class ps2mc(object):
 					print "bad file:", (dirname + ent[8]
 							    + ":"), why
 					ret = False
-				
+
 		dir.close()
 		return ret
-		
+
 	def check(self):
 		"""Run a simple file system check.
 
 		Any problems found are reported to stdout."""
-		
+
 		ret = True
 
-		fat_len = int(str(self.allocatable_cluster_end)) 
+		fat_len = int(str(self.allocatable_cluster_end))
 		if not isinstance(fat_len, int):
 			raise error, "Memory card image too big to check."
 
@@ -1830,7 +1830,7 @@ class ps2mc(object):
 			print
 			print "found", lost_clusters, "lost clusters"
 			ret = False
-			
+
 		return ret
 
 	def _globdir(self, dirname, components, is_dir):
@@ -1850,11 +1850,11 @@ class ps2mc(object):
 							    pattern))]
 		finally:
 			dir.close()
-		
+
 	def _glob(self, dirname, components, is_dir):
 		pattern = components[0]
 		components = components[1:]
-		
+
 		if len(components) == 1:
 			_glob = self._globdir
 		else:
@@ -1881,7 +1881,7 @@ class ps2mc(object):
 		finally:
 			dir.close()
 		return ret
-		
+
 	def glob(self, pattern):
 		if pattern == "":
 			return [""]
@@ -1931,21 +1931,21 @@ class ps2mc(object):
 		finally:
 			dir.close()
 		return length
-			
+
 	def flush(self):
 		self.flush_alloc_cluster_cache()
 		self.flush_fat_cache()
 		if self.modified:
 			self.write_superblock()
 		self.f.flush()
-		
+
 	def close(self):
 		"""Close all open files.
 
 		Disconnects, but doesn't close the file object used
 		access the raw image.  After this method has been
 		called on a ps2mc object, it can no longer be used."""
-		
+
 		# print "ps2mc.close"
 		try:
 			f = self.f

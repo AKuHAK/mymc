@@ -37,7 +37,7 @@ if os.name == "nt":
 
 	class file_wrap(object):
 		""" wrap a file-like object with a new encoding attribute. """
-		
+
 		def __init__(self, f, encoding):
 			object.__setattr__(self, "_f", f)
 			object.__setattr__(self, "encoding", encoding)
@@ -83,16 +83,16 @@ def glob_args(args, globfn):
 		else:
 			ret += match
 	return ret
-	      
+
 def _copy(fout, fin):
 	"""copy the contents of one file to another"""
-	
+
 	while True:
 		s = fin.read(1024)
 		if s == "":
 			break
 		fout.write(s)
-	
+
 
 def do_ls(cmd, mc, opts, args, opterr):
 	mode_bits = "rwxpfdD81C+KPH4"
@@ -129,7 +129,7 @@ def do_ls(cmd, mc, opts, args, opterr):
 					     ent[8]))
 		finally:
 			dir.close()
-			
+
 
 def do_add(cmd, mc, opts,  args, opterr):
 	if len(args) < 1:
@@ -143,7 +143,7 @@ def do_add(cmd, mc, opts,  args, opterr):
 		_copy(out, f)
 		out.close()
 		f.close()
-		
+
 def do_extract(cmd, mc, opts, args, opterr):
 	if len(args) < 1:
 		opterr("Filename required.")
@@ -183,14 +183,14 @@ def do_extract(cmd, mc, opts, args, opterr):
 def do_mkdir(cmd, mc, opts, args, opterr):
 	if len(args) < 1:
 		opterr("Directory required.")
-		
+
 	for filename in args:
 		mc.mkdir(filename)
 
 def do_remove(cmd, mc, opts, args, opterr):
 	if len(args) < 1:
 		opterr("Filename required.")
-		
+
 	for filename in args:
 		mc.remove(filename)
 
@@ -202,7 +202,7 @@ def do_import(cmd, mc, opts, args, opterr):
 	if opts.directory != None and len(args) > 1:
 		opterr("The -d option can only be used with a"
 		       "single savefile.")
-		
+
 	for filename in args:
 		sf = ps2save.ps2_save_file()
 		f = file(filename, "rb")
@@ -243,7 +243,7 @@ def do_export(cmd, mc, opts, args, opterr):
 
 	if opts.overwrite_existing and opts.ignore_existing:
 		opterr("The -i and -f options are mutually exclusive.")
-		
+
 	args = glob_args(args, mc.glob)
 	if opts.output_file != None:
 		if len(args) > 1:
@@ -254,7 +254,7 @@ def do_export(cmd, mc, opts, args, opterr):
 
 	if opts.directory != None:
 		os.chdir(opts.directory)
-		
+
 	for dirname in args:
 		sf = mc.export_save_file(dirname)
 		filename = opts.output_file
@@ -263,7 +263,7 @@ def do_export(cmd, mc, opts, args, opterr):
 				    + "." + opts.type)
 		if filename == None:
 			filename = dirname + "." + opts.type
-				
+
 		if not opts.overwrite_existing:
 			exists = True
 			try:
@@ -274,11 +274,11 @@ def do_export(cmd, mc, opts, args, opterr):
 				if opts.ignore_existing:
 					continue
 				raise io_error(EEXIST, "File exists", filename)
-			
+
 		f = file(filename, "wb")
 		try:
 			print "Exporing", dirname, "to", filename
-			
+
 			if opts.type == "max":
 				sf.save_max_drive(f)
 			else:
@@ -292,7 +292,7 @@ def do_delete(cmd, mc, opts, args, opterr):
 
 	for dirname in args:
 		mc.rmdir(dirname)
-	
+
 def do_setmode(cmd, mc, opts, args, opterr):
 	set_mask = 0
 	clear_mask = ~0
@@ -335,7 +335,7 @@ def do_rename(cmd, mc, opts, args, opterr):
 	if len(args) != 2:
 		opterr("Old and new names required")
 	mc.rename(args[0], args[1])
-	
+
 def _get_ps2_title(mc, enc):
 	s = mc.get_icon_sys(".");
 	if s == None:
@@ -393,7 +393,7 @@ def do_dir(cmd, mc, opts, args, opterr):
 					type = "PocketStation"
 			if type != None:
 				protection = type
-				
+
 			print "%-32s %s" % (ent[8], title[0])
 			print ("%4dKB %-25s %s"
 			       % (length / 1024, protection, title[1]))
@@ -402,7 +402,7 @@ def do_dir(cmd, mc, opts, args, opterr):
 		if f != None:
 			f.close()
 		dir.close()
-		
+
 	free = mc.get_free_space() / 1024
 	if free > 999999:
 		free = "%d,%03d,%03d" % (free / 1000000, free / 1000 % 1000,
@@ -426,7 +426,7 @@ def do_check(cmd, mc, opts, args, opterr):
 		print "No errors found."
 		return 0
 	return 1
-	
+
 def do_format(cmd, mcname, opts, args, opterr):
 	if len(args) != 0:
 		opterr("Incorrect number of arguments.")
@@ -479,8 +479,8 @@ def do_create_pad(cmd, mc, opts, args, opterr):
 			f.write(pad)
 	finally:
 		f.close()
-	
-		
+
+
 def do_frob(cmd, mc, opts, args, opterr):
 	mc.write_superblock()
 
@@ -493,7 +493,7 @@ def _print_bin(base, s):
 		for b in a:
 			print "%02X" % ord(b),
 		print "", a.translate(_trans)
-	
+
 def _print_erase_block(mc, n):
 	ppb = mc.pages_per_erase_block
 	base = n * ppb
@@ -501,7 +501,7 @@ def _print_erase_block(mc, n):
 		s = mc.read_page(base + i)
 		_print_bin(i * mc.page_size, s)
 		print
-		
+
 def do_print_good_blocks(cmd, mc, opts, args, opterr):
 	print "good_block2:"
 	_print_erase_block(mc, mc.good_block2)
@@ -535,14 +535,14 @@ cmd_table = {
 		    "Extract files from the memory card.",
 		    [opt("-o", "--output", metavar = "FILE",
 			 help = 'Extract file to "FILE".'),
-		     opt("-d", "--directory", 
+		     opt("-d", "--directory",
 			 help = 'Extract files from "DIRECTORY".'),
 		     opt("-p", "--use-stdout", action="store_true",
 			 help = "Extract files to standard output.")]),
 	"add": (do_add, "r+b",
 		"filename ...",
 		"Add files to the memory card.",
-		[opt("-d", "--directory", 
+		[opt("-d", "--directory",
 		     help = 'Add files to "directory".')]),
 	"mkdir": (do_mkdir, "r+b",
 		  "directory ...",
@@ -655,7 +655,7 @@ cmd_table = {
 
 #
 # secret commands for debugging purposes.
-# 
+#
 debug_cmd_table = {
 	"frob": (do_frob, "r+b",
 		 "",
@@ -692,7 +692,7 @@ class suboption_parser(optparse.OptionParser):
 
 class my_help_formatter(optparse.IndentedHelpFormatter):
 	"""A better formatter for optparser's help message"""
-	
+
 	def format_description(self, description):
 		if not description:
 			return ""
@@ -719,7 +719,7 @@ def main():
 		       "Supported commands: ")
 	for cmd in sorted(cmd_table.keys()):
 		description += "\n   " + cmd + ": " + cmd_table[cmd][3]
-		
+
 	version = ("mymc "
 		   + verbuild.MYMC_VERSION_MAJOR
 		   + "." + verbuild.MYMC_VERSION_BUILD
@@ -733,7 +733,7 @@ def main():
 			     default = False, help = optparse.SUPPRESS_HELP)
 	optparser.add_option("-i", "--ignore-ecc", action = "store_true",
 			     help = "Ignore ECC errors while reading.")
-			     
+
 	optparser.disable_interspersed_args()
 	(opts, args) = optparser.parse_args()
 
@@ -767,7 +767,7 @@ def main():
 					 description = description,
 					 option_list = optlist)
 	subopt_parser.disable_interspersed_args()
-	
+
 	f = None
 	mc = None
 	ret = 0
@@ -798,7 +798,7 @@ def main():
 		elif getattr(value, "strerror", None) != None:
 			write_error(mcname, value.strerror)
 			ret = 1
-		else:		
+		else:
 			# something weird
 			raise
 		if opts.debug:
@@ -806,7 +806,7 @@ def main():
 
 	except subopt_error, (ret,):
 		pass
-	
+
 	except (ps2mc.error, ps2save.error), value:
 		fn = getattr(value, "filename", None)
 		if fn == None:

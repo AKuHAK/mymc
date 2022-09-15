@@ -35,7 +35,7 @@ DF_EXISTS      = 0x8000
 
 def zero_terminate(s):
 	"""Truncate a string at the first NUL ('\0') character, if any."""
-	
+
 	i = s.find('\0')
 	if i == -1:
 		return s
@@ -51,17 +51,17 @@ _tod_fmt = "<xBBBBBH"
 
 #
 # Use the new Struct object if available
-# 
+#
 if hasattr(struct, "Struct"):
 	_dirent_struct = struct.Struct(_dirent_fmt)
 	_tod_struct = struct.Struct(_tod_fmt)
 
 	def unpack_tod(s):
 		return _tod_struct.unpack(s)
-	
+
 	def pack_tod(tod):
 		return _tod_struct.pack(tod)
-	
+
 	def unpack_dirent(s):
 		ent = _dirent_struct.unpack(s)
 		ent = list(ent)
@@ -81,7 +81,7 @@ else:
 
 	def pack_tod(tod):
 		return struct.pack(_tod_fmt, tod)
-	
+
 	def unpack_dirent(s):
 		# mode, ???, length, created,
 		# fat_cluster, parent_entry, modified, attr,
@@ -101,14 +101,14 @@ else:
 
 def time_to_tod(when):
 	"""Convert a Python time value to a ToD tuple"""
-	
+
 	tm = time.gmtime(when + 9 * 3600)
 	return (tm.tm_sec, tm.tm_min, tm.tm_hour,
 		tm.tm_mday, tm.tm_mon, tm.tm_year)
 
 def tod_to_time(tod):
 	"""Convert a ToD tuple to a Python time value."""
-	
+
 	try:
 		month = tod[4]
 		if month == 0:
@@ -118,7 +118,7 @@ def tod_to_time(tod):
 					None, None, 0)) - 9 * 3600
 	except ValueError:
 		return 0
-		
+
 def tod_now():
 	"""Get the current time as a ToD tuple."""
 	return time_to_tod(time.time())
