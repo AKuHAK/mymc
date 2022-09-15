@@ -10,6 +10,7 @@
 import calendar
 import time
 import struct
+import os
 _SCCS_ID = "@(#) mymc ps2mc_dir.py 1.4 12/10/04 19:11:08\n"
 
 
